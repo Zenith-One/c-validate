@@ -59,7 +59,7 @@
                     cnd: $('#'+cndName)
                 }
             );
-            var check = $('input[name="'+fieldName+'"]');
+            var check = $('[name="'+fieldName+'"]');
             var func = null;
             var cLabelSelector = 'label[for='+cndName+']';
             var cLabel = $(cLabelSelector);
@@ -70,7 +70,7 @@
                     if (item.val().length > 0){
                         if(cLabelSpan.length < 1){
                             // Doesn't have one. ADD EET!
-                            cLabel.html('<span class="required">*</span>'+cLabel.html());
+                            cLabel.html('<span class="required">* </span>'+cLabel.html());
                         }
                     } else {
                         if(cLabelSpan.length > 0){
@@ -81,14 +81,20 @@
                 check.change(func);
             } else {
                 var item = $('input[name='+fieldName+'][value="'+value+'"]');
+                var status = "checked"
+                if (item.length <= 0){
+                    item = $('select[name='+fieldName+'] option[value="'+value+'"]');
+                    status = "selected"
+                }
+
                 func = function(){
                     // add * to required field if it's not there already!
                     var cLabelSpan = cLabel.children('span');
-                    if (item.is(':checked')){
+                    if (item.attr('type') == "text" || item.is(':'+status)){
                         // Check to see if the label has a span in it
                         if(cLabelSpan.length < 1){
                             // Doesn't have one. ADD EET!
-                            cLabel.html('<span class="required">*</span>'+cLabel.html());
+                            cLabel.html('<span class="required">* </span>'+cLabel.html());
                         }
                     } else {
                         // check to see if the label has a span in it
@@ -99,73 +105,36 @@
                 };
                 check.each(function(){$(this).click(func);
                 });
+            
             }
             return cond;
         }
 
-        this.find('input').each(function(){
+        this.find('input, select, textarea').each(function(){
             var name = $(this).attr('name');
+
             if ($(this).attr('required')){
                 if (addReqMarker){
                     var label = $('label[for="'+name+'"]');
                     if (label.children('span').length <= 0){
-                        label.html('<span class="required">*</span>'+label.html());
+                        label.html('<span class="required">* </span>'+label.html());
                     }
                 }
                 req.push($(this));  
             }
 
-            if (name) {
-                if (name.indexOf('phone') >= 0 || name.indexOf('Phone') >= 0 || $(this).attr('type')==='tel'){
-                    ph.push($(this));
-                    $(this).mask('(999) 999-9999');
-                }
+            if ((name !== undefined && (name.indexOf('phone') >= 0 || name.indexOf('Phone') >= 0)) || $(this).attr('type')==='tel'){
+                ph.push($(this));
+                $(this).mask('(999) 999-9999');
             }
-            if($(this).attr('data-cond-trigger')){
+            if($(this).attr('data-cond-trigger') != undefined){
                 var fieldName = $(this).attr('name');
                 var value = $(this).attr('data-cond-value');
                 var cndName = $(this).attr('data-cond-target');
                 var condArr = cndName.split(' ');
-                condArr = reverseArray(condArr);
                 for (var i = condArr.length - 1; i >= 0; i--) {
                     addCond(fieldName, value, condArr[i]);
                 }
-            }
-        });
-
-        this.find('select').each(function(){
-            var name = $(this).attr('name');
-            if ($(this).attr('required')){
-                if(addReqMarker){
-                    var label = $('label[for='+name+']');
-                    if (label.children('span').length <=0){
-                        label.html('<span class="required">*</span>'+label.html());
-                    }
-                }
-                req.push($(this));
-            }
-            if($(this).attr('data-cond-trigger')){
-                var fieldName = $(this).attr('name');
-                var value = $(this).attr('data-cond-value');
-                var cndName = $(this).attr('data-cond-target');
-                addCond(fieldName, value, cndName);
-            }
-        });
-
-        this.find('textarea').each(function(){
-            var name = $(this).attr('name');
-            if ($(this).attr('required')){
-                if(addReqMarker){
-                    var label = $('label[for='+name+']');
-                    label.html('<span class="required">*</span>'+label.html());
-                }
-                req.push($(this));
-            }
-            if($(this).attr('data-cond-trigger')){
-                var fieldName = $(this).attr('name');
-                var value = $(this).attr('data-cond-value');
-                var cndName = $(this).attr('data-cond-target');
-                addCond(fieldName, value, cndName);
             }
         });
 
@@ -198,9 +167,6 @@
             } else {
                 // HANDLE EET!
                 var bgColor = firstInvalid.css('background-color');
-                if (!bgColor) {
-                    bgColor = "#FFFFFF";
-                }
                 $('html, body').animate({
                      scrollTop: firstInvalid.offset().top - 75
                      }, 
