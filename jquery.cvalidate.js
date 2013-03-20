@@ -17,7 +17,7 @@
         
         var req = [];
         var ph = [];
-        var cond = [];
+        cond = [];
 
         function reverseArray(arr){
             var temp = []
@@ -30,7 +30,7 @@
         function validateCond(field, value, cnd){
             var out = {passed: true};
             if (value === '!any'){
-                var item = $('input[name='+field+']');
+                var item = $('[name='+field+']');
                 if(item.val().length > 0){
                     if (cnd.val().length <= 0){
                         out.passed = false;
@@ -39,14 +39,25 @@
                     }
                 }
             } else {
-                var item = $('input[name='+field+'][value='+value+']');
-                if (item.is(':checked')){
-                    if (cnd.val() === ''){
-                        out.passed = false;
-                        out.cnd = cnd;
-                        out.item = item;
+                if ($('[name='+field+']')[0].nodeName.toLowerCase() == 'select' ){
+                    var item = $('[name='+field+']');
+                    if (item.val() == value){
+                        if (cnd.val() === ''){
+                            out.passed = false;
+                            out.cnd = cnd;
+                            out.item = item;
+                        }
                     }
-                }   
+                } else {
+                    var item = $('input[name='+field+'][value='+value+']');
+                    if (item.is(':checked')){
+                        if (cnd.val() === ''){
+                            out.passed = false;
+                            out.cnd = cnd;
+                            out.item = item;
+                        }
+                    }   
+                }
             }
             return out;
         }
@@ -141,7 +152,7 @@
         req = reverseArray(req);
         cond = reverseArray(cond);
 
-        this.submit(function(e){
+         var validationFunc = function(e){
             var firstInvalid = null;
             var firstCondInvalid = null;
             for (var i = req.length - 1; i >=0; i--){
@@ -194,6 +205,13 @@
                 e.preventDefault();
             }
 
+        };
+
+        this.submit(function(e){
+            
+            validationFunc(e);
         });
+
+        return validationFunc;
     }
 })(jQuery);
